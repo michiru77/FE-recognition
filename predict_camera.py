@@ -17,6 +17,8 @@ import glob
 from datetime import datetime
 import shutil
 import argparse
+import random
+import copy
 
 #_ cv import
 from keras.preprocessing.image import load_img, img_to_array
@@ -87,31 +89,63 @@ while True:
 
     # When a face is found, get face-place cv2.rectangle
     if len(face_rects) > 0:
+
         # skip by skip_frame
         if frame_count % skip_frame == 0:
-
             # Cutting processing
             ins_recognition.get_face(face_rects, frame_image)
             ins_recognition.predict(select_exp, frame_count)
-            get_faces = ins_recognition.faces
+            #get_faces = ins_recognition.faces
             if select_op['grad_cam'] == 1:
                 ins_recognition.grad_cam(select_exp, frame_count)
 
             # Keep a record
             save_face_rects = face_rects
-            use_rects = face_rects
         else:
             if save_face_rects is False:
                 continue
-            use_rects = save_face_rects
     else:
         if save_face_rects is False:
             continue
-        use_rects = save_face_rects
+
+    use_rects = save_face_rects
     frame_count += 1
 
+    # Create swapping image
+    image_info = []
+    swap_info = []
+    for for1, (rect, predict, face) in enumerate(zip(use_rects, ins_recognition.predicts, ins_recognition.cv2_faces)):
+        image_info.append([rect, predict, face])
+        swap_info.append([rect, predict, face])
+
+    if select_op['swap'] == 1:
+        # Search select_exp
+        swap_idx = [i for i, x in enumerate(swap_info) if x[1] == select_exp]
+        if len(swap_idx) != 0:
+            swap_idx.insert(0, swap_idx[-1])
+            swap_idx.pop()
+            swap_default = swap_idx[0]
+            swap_iter = iter(swap_idx)
+
+            for for1 in range(int(len(swap_idx) / 2)):
+                first_idx, second_idx = next(swap_iter), next(swap_iter)
+                swap_info[first_idx][2], swap_info[second_idx][2] =\
+                    copy.copy(swap_info[second_idx][2]), copy.copy(swap_info[first_idx][2])
+            if len(swap_idx) % 2 != 0:
+                first_idx = next(swap_iter)
+                swap_info[first_idx][2], swap_info[swap_idx[0]][2] =\
+                    copy.copy(swap_info[swap_idx[0]][2]), copy.copy(swap_info[first_idx][2])
+        use_info = swap_info
+    else:
+        use_info = image_info
+
     # Create a result image
-    for for1, (rect, predict, face) in enumerate(zip(use_rects, ins_recognition.predicts, get_faces)):
+    #for for1, (rect, predict, face) in enumerate(zip(use_rects, ins_recognition.predicts, get_faces)):
+    for for1, get_info in enumerate(use_info):
+        rect = get_info[0]
+        predict = get_info[1]
+        face = get_info[2]
+
         if select_op['face_recognition'] == 1:
             expression_count[predict] += 1
 
@@ -140,6 +174,13 @@ while True:
                     cut_img = frame_image[rect[1]:rect[1] + rect[3], rect[0]:rect[0] + rect[2]]
                     cut_img = cv2.resize(cut_img, (rect[2] // 20, rect[3] // 20))
                     cut_img = cv2.resize(cut_img, (rect[2], rect[3]), cv2.INTER_NEAREST)
+                    frame_image[rect[1]:rect[1] + rect[3], rect[0]:rect[0] + rect[2]] = cut_img
+
+            # If mosaic mode is true, apply a filter to excepted expression.
+            if select_op['swap'] == 1:
+                if predict == select_exp:
+                    cut_img = cv2.resize(face, (rect[2], rect[3]))
+                    # cut_img = cv2.resize(cut_img, (rect[2], rect[3]), cv2.INTER_NEAREST)
                     frame_image[rect[1]:rect[1] + rect[3], rect[0]:rect[0] + rect[2]] = cut_img
 
     # Show image
@@ -205,6 +246,8 @@ while True:
             select_op['percent'] = 1-select_op['percent']
         elif save_key& 0xFF == ord('m'):
             select_op['mosaic'] = 1-select_op['mosaic']
+        elif save_key& 0xFF == ord('s'):
+            select_op['swap'] = 1-select_op['swap']
         elif save_key& 0xFF == ord('g'):
             select_op['grad_cam'] = 1-select_op['grad_cam']
         elif save_key& 0xFF == ord('z'):

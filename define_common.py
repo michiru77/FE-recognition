@@ -34,7 +34,7 @@ TARGET_SIZE = 200
 _ display info
 '''
 select_exp = 0
-select_op = {'face_recognition': 0, 'expression_recognition': 0, 'percent': 0, 'mosaic': 0, 'grad_cam': 0}
+select_op = {'face_recognition': 0, 'expression_recognition': 0, 'percent': 0, 'mosaic': 0, 'swap': 0, 'grad_cam': 0}
 expression_colors = [(255, 215, 0),
                      (255, 0, 0),
                      (24, 203, 220),

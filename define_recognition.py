@@ -29,12 +29,14 @@ class Recognition:
         self.predicts = []
         self.face_num = 0
         self.faces = []
+        self.cv2_faces = []
         self.jetcams = []
         self.ins_image_loader = Image_loader('', image_size)
         K.set_learning_phase(1)  # set learning phase
 
     def get_face(self, arg_face_rect, arg_image):
         self.faces = []
+        self.cv2_faces = []
         for rect in arg_face_rect:
             self.face_num = 0
 
@@ -45,6 +47,7 @@ class Recognition:
             height = rect[3]
 
             # Cut out only the face and save it
+            get_cv2_face = arg_image[y:y+height, x:x+width]
             get_face = cv2.resize(arg_image[y:y+height, x:x+width], (image_size, image_size), interpolation=cv2.INTER_LINEAR)
             get_face = cv2pil(get_face)
             '''
@@ -52,6 +55,7 @@ class Recognition:
             cv2.imwrite(new_image_path, get_face)
             '''
             self.faces.append(get_face)
+            self.cv2_faces.append(get_cv2_face)
             self.face_num += 1
         self.ins_image_loader.set_PILs(self.faces)
 
@@ -101,10 +105,10 @@ class Recognition:
             self.jetcams.append(jetcam)
 
         self.predicts = self.model.predict_classes(self.ins_image_loader.grayscales)
-        for for1, (predict, jetcam) in enumerate(zip(self.predicts, self.jetcams)):
-            if arg_select_label == predict:
-                new_image_path = save_base_path + '/' + self.labels[predict] + '/' + date_str
-                if os.path.isdir(new_image_path) is False:
-                    os.makedirs(new_image_path)
-                new_image_path += '/' + str(arg_frame_count) + '_' + str(for1) + '.jpg'
-                jetcam.save(new_image_path)
+        #for for1, (predict, jetcam) in enumerate(zip(self.predicts, self.jetcams)):
+        #    if arg_select_label == predict:
+        #        new_image_path = save_base_path + '/' + self.labels[predict] + '/' + date_str
+        #        if os.path.isdir(new_image_path) is False:
+        #            os.makedirs(new_image_path)
+        #        new_image_path += '/' + str(arg_frame_count) + '_' + str(for1) + '.jpg'
+        #        jetcam.save(new_image_path)
