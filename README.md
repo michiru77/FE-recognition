@@ -9,8 +9,9 @@
   - [ ] バグ取り
 
 表示
+  - [x] [displayのサイズ取得](https://stackoverflow.com/questions/3129322/how-do-i-get-monitor-resolution-in-python/14124257)
   - [ ] windowの文字サイズ最適化
-  - [ ] windowの画面サイズ最適化
+  - [ ] windowサイズ最適化
 
 ポスター
   - [x] 画像系の最新技術のサーベイ
