@@ -13,14 +13,17 @@
   - [x] [displayのサイズ取得](https://stackoverflow.com/questions/3129322/how-do-i-get-monitor-resolution-in-python/14124257)
   - [x] windowサイズ最適化
   - [ ] windowの文字サイズ最適化
+  - [ ] 表情の種類名を日本語に直す
 
 ポスター
   - [x] 画像系の最新技術のサーベイ
   - [x] 第1刷
   - [ ] 最終
+  - [ ] 印刷
 
 デモ
   - [x] 接続テスト
   - [ ] カンペ作成
+  - [ ] 表情の種類リスト作成
   - [ ] 時間計測
   - [ ] フィードバックの反映
